@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Shopping Cart</title>
+	<meta charset="utf-8">
+	
+	<link href="assets/img/logo.png" rel="icon">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+	<main class="page">
+	 	<section class="shopping-cart dark">
+	 		<div class="container">
+		        <div class="block-heading">
+					<h2>SMU FOODS</h2>
+		          <p>Order na po!</p>
+		        </div>
+		        <div class="content">
+	 				<div class="row">
+	 					<div class="col-md-12 col-lg-8">
+	 						<div class="items" id="cart-items">
+				 				<!-- Cart items will be dynamically added here -->
+				 				<p id="empty-cart-message" style="display: none;">Order Yours</p>
+				 			</div>
+			 			</div>
+			 			<div class="col-md-12 col-lg-4">
+			 				<div class="summary">
+			 					<h3>Summary</h3>
+			 					<div class="summary-item"><span class="text">Total Quantities</span><span class="price" id="cart-quantities">0</span></div>
+			 					<div class="summary-item"><span class="text">To Pay</span><span class="price" id="cart-total">₱0.00</span></div>
+			 					<button type="button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#checkoutModal">Checkout</button>
+								<button type="button" class="btn btn-danger btn-lg btn-block" id="clear-cart">Clear Cart</button>
+				 			</div>
+			 			</div>
+		 			</div> 
+		 		</div>
+	 		</div>
+			 <div class="row mt-4">
+				<div class="col-12 text-center">
+				  <a href="index.html#menu" class="btn btn-secondary">Back to Menu</a>
+				</div>
+			</div>
+		</section>
+	</main>
+	<!-- Checkout Modal -->
+	<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="checkoutModalLabel">Checkout</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <form id="checkoutForm">
+	          <div class="form-group">
+	            <label for="name">Name</label>
+	            <input type="text" class="form-control" id="name" placeholder="Enter your name" required>
+	          </div>
+	          <div class="form-group">
+	            <label for="section">Section</label>
+	            <select class="form-control" id="section" required>
+				  <option value="">Select Section</option>
+	              <option>St. Luke</option>
+	              <option>St. Agatha</option>
+	              <option>St. James</option>
+	              <option>St. Martin</option>
+	            </select>
+	          </div>
+	          <div class="form-group">
+	            <label for="email">Email</label>
+	            <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+	          </div>
+	          <div class="form-group">
+	            <label for="pickupTime">Desired Pickup Time</label>
+	            <input type="time" class="form-control" id="pickupTime" required>
+	          </div>
+	        </form>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	        <button type="button" class="btn btn-primary" id="confirmCheckoutBtn">Confirm</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const cartItemsContainer = document.getElementById('cart-items');
+			const cartTotal = document.getElementById('cart-total');
+			const cartQuantities = document.getElementById('cart-quantities');
+			const emptyCartMessage = document.getElementById('empty-cart-message');
+			const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+			function updateCartDisplay() {
+				cartItemsContainer.innerHTML = '';
+				let subtotal = 0;
+				let totalQuantities = 0;
+
+				if (cart.length === 0) {
+					emptyCartMessage.style.display = 'block';
+				} else {
+					emptyCartMessage.style.display = 'none';
+				}
+
+				cart.forEach(item => {
+					if (item.quantity > 0) {
+						const itemTotal = item.price * item.quantity;
+						subtotal += itemTotal;
+						totalQuantities += item.quantity;
+
+						const itemElement = document.createElement('div');
+						itemElement.classList.add('product');
+						itemElement.innerHTML = `
+							<div class="row">
+								<div class="col-md-12">
+									<div class="info">
+										<div class="row">
+											<div class="col-md-5 product-name">
+												<div class="product-name">
+													<a href="#">${item.name}</a>
+													<div class="product-info">
+														<div>Price: <span class="value">₱${item.price.toFixed(2)}</span></div>
+														<div>Add-ons: <span class="value">${item.comment}</span></div>
+														<div>Spoon: <span class="value">${item.spoon === 'yes' ? 'With Spoon' : 'Without Spoon'}</span></div>
+													</div>
+												</div>
+											</div>
+											<div class="col-md-4 quantity">
+												<label for="quantity">Quantity:</label>
+												<input id="quantity" type="number" value="${item.quantity}" class="form-control quantity-input" data-name="${item.name}" data-comment="${item.comment}" data-spoon="${item.spoon}">
+											</div>
+											<div class="col-md-3 price">
+												<span>₱${itemTotal.toFixed(2)}</span>
+											</div>
+											<div class="col-md-1 remove">
+												<button class="btn btn-danger btn-sm remove-item" data-name="${item.name}" data-comment="${item.comment}" data-spoon="${item.spoon}">Remove</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						`;
+						cartItemsContainer.appendChild(itemElement);
+					}
+				});
+
+				cartTotal.textContent = `₱${subtotal.toFixed(2)}`;
+				cartQuantities.textContent = totalQuantities;
+			}
+
+			cartItemsContainer.addEventListener('input', function(event) {
+				if (event.target.classList.contains('quantity-input')) {
+					const itemName = event.target.getAttribute('data-name');
+					const itemComment = event.target.getAttribute('data-comment');
+					const itemSpoon = event.target.getAttribute('data-spoon');
+					const newQuantity = parseInt(event.target.value);
+					const item = cart.find(item => item.name === itemName && item.comment === itemComment && item.spoon === itemSpoon);
+
+					if (item) {
+						item.quantity = newQuantity;
+						if (item.quantity === 0) {
+							const index = cart.indexOf(item);
+							cart.splice(index, 1);
+						}
+						localStorage.setItem('cart', JSON.stringify(cart));
+						updateCartDisplay();
+					}
+				}
+			});
+
+			cartItemsContainer.addEventListener('click', function(event) {
+				if (event.target.classList.contains('remove-item')) {
+					const itemName = event.target.getAttribute('data-name');
+					const itemComment = event.target.getAttribute('data-comment');
+					const itemSpoon = event.target.getAttribute('data-spoon');
+					const item = cart.find(item => item.name === itemName && item.comment === itemComment && item.spoon === itemSpoon);
+
+					if (item) {
+						const index = cart.indexOf(item);
+						cart.splice(index, 1);
+						localStorage.setItem('cart', JSON.stringify(cart));
+						updateCartDisplay();
+					}
+				}
+			});
+
+			document.getElementById('clear-cart').addEventListener('click', function() {
+				localStorage.removeItem('cart');
+				cart.length = 0; // Clear the cart array
+				updateCartDisplay();
+			});
+
+			document.getElementById('confirmCheckoutBtn').addEventListener('click', function() {
+				const name = document.getElementById('name').value;
+				const section = document.getElementById('section').value;
+				const email = document.getElementById('email').value;
+				const pickupTime = document.getElementById('pickupTime').value;
+		
+				if (!name || !section || !email || !pickupTime) {
+				  alert('Please fill in all required fields.');
+				  return;
+				}
+		
+				// Here you can handle the form submission, e.g., send the data to the server
+				alert(`Order confirmed!\nName: ${name}\nSection: ${section}\nEmail: ${email}\nPickup Time: ${pickupTime}`);
+				$('#checkoutModal').modal('hide');
+
+				// Clear the cart after checkout
+				localStorage.removeItem('cart');
+				cart.length = 0; // Clear the cart array
+				updateCartDisplay();
+			  });
+
+			updateCartDisplay();
+		});
+	</script>
+</body>
+</html>
